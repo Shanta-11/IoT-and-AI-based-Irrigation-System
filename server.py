@@ -5,6 +5,7 @@ from datetime import datetime
 import sys
 import time
 import numpy as np
+from ml_model import predict_with_saved_model
 
 topic1 = "IOT/location0/data"
 topic2 = "IOT/location1/data"
@@ -37,6 +38,7 @@ def on_message(client, userdata, msg):
     irrigation_state = data['irrigation_state']
     # sample from bernoulli distribution
     irrigation_decision = np.random.randint(2)
+    # irrigation_decision = predict_with_saved_model()
     if irrigation_decision ^ irrigation_state:
         client.publish(topic=pub_topic1, payload=1)
         print("Irrigation decision: " + str(irrigation_decision))

@@ -9,12 +9,22 @@ import machine
 import M5
 import uasyncio as asyncio
 import json
+from M5 import Widgets
 
 rtc = machine.RTC()
 SERVER = "0.0.0.0"
 CLIENT_ID = ubinascii.hexlify(machine.unique_id())
 PUBLISH_TOPIC = b"IOT/location0/data"
 SUBSCRIBE_TOPIC = b"IOT/location0/server"
+IRRIGATION_STATE = 0
+Widgets.fillScreen(0x222222)
+counterLabel = Widgets.Label("Irrigation Status: Off", 10, 30, 
+                            1.0, 0xffffff, 0x222222, 
+                            Widgets.FONTS.DejaVu12)
+
+title0 = Widgets.Title("Irrigation System", 25, 
+                        0xffffff, 0x0000FF, 
+                        Widgets.FONTS.DejaVu24) 
 
 def getInternetTime():
     global rtc
@@ -38,7 +48,16 @@ def connect_to_wifi(ssid, password):
     return (wlan)
 
 def subscribe_callback(topic, msg):
+    global IRRIGATION_STATE, counterLabel
+    M5.update()
+    
+
     M5.Speaker.tone(5000, 500)
+    IRRIGATION_STATE = 1-IRRIGATION_STATE
+    if IRRIGATION_STATE == 0:
+        counterLabel.setText("Irrigation Status: Off")
+    else:
+        counterLabel.setText("Irrigation Status: On")
 
 async def getSensorData_task():
     global rtc
@@ -58,14 +77,15 @@ async def getSensorData_task():
 #       data = f"{str(timestamp)},{str(air_temp)},{str(air_moist)},{str(water_depth)},{str(soil_moist)},{str(soil_ph)},{str(solar_rad)},{str(wind_speed)},{str(wind_dir)}"    
         data = {}
         data['timestamp'] = timestamp
-        data['air_temp'] = str(air_temp)
-        data['air_moist'] = str(air_moist)
-        data['water_depth'] = str(water_depth)
-        data['soil_moist'] = str(soil_moist)
-        data['soil_ph'] = str(soil_ph)
-        data['wind_speed'] = str(wind_speed)
-        data['solar_rad'] = str(solar_rad)
-        data['wind_dir'] = str(wind_dir)
+        data['air_temp'] = air_temp
+        data['air_moist'] = air_moist
+        data['water_depth'] = water_depth
+        data['soil_moist'] = soil_moist
+        data['soil_ph'] = soil_ph
+        data['wind_speed'] = wind_speed
+        data['solar_rad'] = solar_rad
+        data['wind_dir'] = wind_dir
+        data['irrigation_state'] = IRRIGATION_STATE
         with open('sensor_data.json', 'r+') as f:
             j = json.loads(f.read())
             j.append(data)
@@ -82,7 +102,8 @@ async def publishData_task(c):
             
             with open('sensor_data.json', 'r+') as f:
                 j = json.loads(f.read())
-                c.publish(PUBLISH_TOPIC, json.dumps(j), qos = 1)
+                if len(j)>0:
+                    c.publish(PUBLISH_TOPIC, json.dumps(j), qos = 1)
                 
             
             with open('sensor_data.json', 'w') as f:
@@ -110,7 +131,7 @@ try:
     if SERVER == "0.0.0.0":
         SERVER = wlan.ifconfig()[2]
 #        getInternetTime()        
-    c = MQTTClient(CLIENT_ID, SERVER)
+    c = MQTTClient(CLIENT_ID, SERVER, port = 1884)
     c.connect()
     print("Connected to %s" % SERVER)
     c.set_callback(subscribe_callback)
