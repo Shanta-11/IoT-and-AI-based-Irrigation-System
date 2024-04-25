@@ -101,8 +101,8 @@ async def getSensorData_task():
             json.dump(j, f)
         print("sensed")
 
-        # Repeat task after 5s
-        await asyncio.sleep_ms(5000)
+        # Repeat task after 1hr
+        await asyncio.sleep_ms(3600000)
       
 # Asynchronous function for data transmission
 async def publishData_task(c):
@@ -122,7 +122,7 @@ async def publishData_task(c):
             print("published")
 
             # Repeat task after 10s
-            await asyncio.sleep_ms(10000)
+            await asyncio.sleep_ms(5400000)
             
     except Exception as e:
         print(e)
@@ -139,7 +139,7 @@ async def main(c):
 # Compiling the above functions to complete device functionality
 try:
     # IMPORTANT : Replace your own WiFi credentials before running
-    wlan = connect_to_wifi('Shanta\'s Dell', 'Shanta1111')
+    wlan = connect_to_wifi('SSID', 'Password')
     if SERVER == "0.0.0.0":
         SERVER = wlan.ifconfig()[2]
         getInternetTime()
