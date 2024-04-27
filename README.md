@@ -6,12 +6,13 @@ The system consists of many IoT nodes which sense various environmental variable
 
   
 
-The project consists of 5 files
+The project consists of 6 files
 
 1. `main.py`: The code to be executed on the IoT device (Micropython)
 2. `server.py`: The code for the server
 3. `IOT_Project.ipynb`: The EDA and Construction of the AI model
 4. `ml_model.py & random_forest_model.pkl`: Model integration file and the weights of the model
+5. `Tarp_10000.csv`: Contains the training dataset for our AI Model
 
 ## Usage
 
